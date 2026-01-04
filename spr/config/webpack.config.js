@@ -1,5 +1,26 @@
 const path = require('path');
 const webpack = require('webpack');
+const dotenv = require('dotenv');
+
+// 加载 .env 文件
+const envPath = path.resolve(__dirname, '../.env');
+const envConfig = dotenv.config({ path: envPath });
+
+// 如果 .env 文件不存在，使用空对象
+const envVars = envConfig.error || !envConfig.parsed ? {} : envConfig.parsed;
+
+// 调试：打印加载的���境变量
+console.log('========== 环境变量加载 ==========');
+console.log('.env 文件路径:', envPath);
+if (envConfig.error) {
+  console.error('.env 加载失败:', envConfig.error);
+}
+console.log('环境变量数量:', Object.keys(envVars).length);
+console.log('VITE_GEMINI_API_KEY:', envVars.VITE_GEMINI_API_KEY ? '✓ 已设置' : '✗ 未设置');
+if (envVars.VITE_GEMINI_API_KEY) {
+  console.log('API Key 长度:', envVars.VITE_GEMINI_API_KEY.length);
+}
+console.log('==================================');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { ESBuildMinifyPlugin } = require('esbuild-loader');
@@ -83,14 +104,15 @@ const config = {
       process: 'process/browser',
     }),
     new webpack.DefinePlugin({
-      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || ''),
-      'process.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || ''),
-      'process.env.VITE_SUPABASE_API_KEY': JSON.stringify(process.env.VITE_SUPABASE_API_KEY || ''),
-      'process.env.VITE_SUPABASE_TABLE_NAME': JSON.stringify(process.env.VITE_SUPABASE_TABLE_NAME || 'blocks_sync'),
-      'process.env.VITE_REDIS_REST_URL': JSON.stringify(process.env.VITE_REDIS_REST_URL || ''),
-      'process.env.VITE_REDIS_PASSWORD': JSON.stringify(process.env.VITE_REDIS_PASSWORD || ''),
-      'process.env.VITE_ENABLE_REDIS': JSON.stringify(process.env.VITE_ENABLE_REDIS || 'false'),
-      'process.env.VITE_ATTACHMENT_FIELD_NAME': JSON.stringify(process.env.VITE_ATTACHMENT_FIELD_NAME || '附件'),
+      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(envVars.VITE_GEMINI_API_KEY || ''),
+      'process.env.VITE_GEMINI_BASE_URL': JSON.stringify(envVars.VITE_GEMINI_BASE_URL || ''),
+      'process.env.VITE_SUPABASE_URL': JSON.stringify(envVars.VITE_SUPABASE_URL || ''),
+      'process.env.VITE_SUPABASE_API_KEY': JSON.stringify(envVars.VITE_SUPABASE_API_KEY || ''),
+      'process.env.VITE_SUPABASE_TABLE_NAME': JSON.stringify(envVars.VITE_SUPABASE_TABLE_NAME || 'blocks_sync'),
+      'process.env.VITE_REDIS_REST_URL': JSON.stringify(envVars.VITE_REDIS_REST_URL || ''),
+      'process.env.VITE_REDIS_PASSWORD': JSON.stringify(envVars.VITE_REDIS_PASSWORD || ''),
+      'process.env.VITE_ENABLE_REDIS': JSON.stringify(envVars.VITE_ENABLE_REDIS || 'false'),
+      'process.env.VITE_ATTACHMENT_FIELD_NAME': JSON.stringify(envVars.VITE_ATTACHMENT_FIELD_NAME || '附件'),
     }),
     new BitableAppWebpackPlugin({
       // open: true, // 控制是否自动打开多维表格

@@ -5,9 +5,12 @@ import {
   ParagraphSummary,
   QuizQuestion,
 } from "../types";
-import { GEMINI_API_KEY } from "../config/env";
+import { GEMINI_API_KEY, GEMINI_BASE_URL } from "../config/env";
 
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+const ai = new GoogleGenAI({
+  apiKey: GEMINI_API_KEY,
+  baseURL: GEMINI_BASE_URL || undefined,
+});
 
 // 摘要结果接口（用于API响应）
 export interface SummaryResult {

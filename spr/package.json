@@ -34,6 +34,7 @@
     "autoprefixer": "^10.4.23",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
+    "dotenv": "^17.2.3",
     "esbuild-loader": "^2.20.0",
     "html-webpack-plugin": "^5.5.0",
     "less": "^4.1.3",

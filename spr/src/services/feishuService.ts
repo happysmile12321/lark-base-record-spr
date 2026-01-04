@@ -62,25 +62,16 @@ export async function getMarkdownFromAttachment(): Promise<string> {
     console.log("附件 token:", attachmentValue.token);
 
     // 4. 通过 token 获取文件内容
-    // 尝试多种 API 方式
-    let fileBlob: Blob;
-    try {
-      // 方式1: 通过 field 获取
-      fileBlob = await (attachmentField as any).getAttachmentFile(attachmentValue.token);
-    } catch {
-      try {
-        // 方式2: 通过 table 获取
-        fileBlob = await (table as any).getAttachmentFile(attachmentValue.token);
-      } catch {
-        try {
-          // 方式3: 使用附件对象自带的 url 属性
-          const response = await fetch((attachmentValue as any).url);
-          fileBlob = await response.blob();
-        } catch {
-          throw new Error("无法获取文件内容，API 不支持");
-        }
-      }
+    // 使用 table.getAttachmentUrl 获取下载链接
+    const downloadUrl = await table.getAttachmentUrl(attachmentValue.token, attachmentField.id, recordId);
+    console.log("附件下载 URL:", downloadUrl);
+
+    const response = await fetch(downloadUrl);
+    if (!response.ok) {
+      throw new Error(`文件下载失败: ${response.status}`);
     }
+
+    const fileBlob = await response.blob();
     console.log("文件获取成功，大小:", fileBlob.size);
 
     const fileText = await blobToText(fileBlob);

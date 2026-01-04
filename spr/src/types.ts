@@ -120,7 +120,7 @@ export interface Droplet {
 }
 
 // 菜单相关类型
-export type MenuItemAction = 'openSettings' | 'toggleExpand' | 'toggleTheme' | 'refresh' | 'toggleMarkdownPanel' | 'reparse';
+export type MenuItemAction = 'openSettings' | 'toggleExpand' | 'toggleTheme' | 'refresh' | 'toggleMarkdownPanel' | 'reparse' | 'apiSettings';
 
 export interface MenuItem {
   id: string;
@@ -152,6 +152,19 @@ export interface NodeRetrievalStats {
   lastTestTime?: number;       // 上次测试时间戳
 }
 
+// ===== API 配置 =====
+
+export type ApiProvider = 'gemini' | 'siliconflow';
+
+export interface ApiConfig {
+  provider: ApiProvider;
+  geminiApiKey?: string;
+  geminiBaseUrl?: string;
+  siliconflowApiKey?: string;
+  siliconflowBaseUrl?: string;
+  siliconflowModel?: string;
+}
+
 export interface SyncData {
   markdown: string;
   analysis: SkeletonNode | null;
@@ -168,5 +181,8 @@ export interface SyncData {
   lastStudyTime?: number;                      // 上次学习时间戳
   nextReviewTime?: number;                     // 下次建议复习时间戳
   nodeRetrievalStats?: Record<string, NodeRetrievalStats>; // 节点路径 -> 测试统计
+  // API 配置
+  apiConfig?: ApiConfig;
 }
+
 

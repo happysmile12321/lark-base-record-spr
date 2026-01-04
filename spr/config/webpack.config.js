@@ -106,6 +106,9 @@ const config = {
     new webpack.DefinePlugin({
       'process.env.VITE_GEMINI_API_KEY': JSON.stringify(envVars.VITE_GEMINI_API_KEY || ''),
       'process.env.VITE_GEMINI_BASE_URL': JSON.stringify(envVars.VITE_GEMINI_BASE_URL || ''),
+      'process.env.VITE_SILICONFLOW_API_KEY': JSON.stringify(envVars.VITE_SILICONFLOW_API_KEY || ''),
+      'process.env.VITE_SILICONFLOW_BASE_URL': JSON.stringify(envVars.VITE_SILICONFLOW_BASE_URL || ''),
+      'process.env.VITE_SILICONFLOW_MODEL': JSON.stringify(envVars.VITE_SILICONFLOW_MODEL || ''),
       'process.env.VITE_SUPABASE_URL': JSON.stringify(envVars.VITE_SUPABASE_URL || ''),
       'process.env.VITE_SUPABASE_API_KEY': JSON.stringify(envVars.VITE_SUPABASE_API_KEY || ''),
       'process.env.VITE_SUPABASE_TABLE_NAME': JSON.stringify(envVars.VITE_SUPABASE_TABLE_NAME || 'blocks_sync'),

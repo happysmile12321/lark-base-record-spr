@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { analyzeMarkdown } from "../services/geminiService";
+import { analyzeMarkdownWithProvider, createDefaultApiConfig } from "../services/apiProviderService";
 import { persistenceManager } from "../services/supabaseService";
 import { redisService } from "../services/redisService";
 import {
@@ -7,13 +7,14 @@ import {
   getMarkdownFromAttachment,
   onSelectionChange,
 } from "../services/feishuService";
-import { SyncData, MenuConfig } from "../types";
+import { SyncData, MenuConfig, ApiConfig } from "../types";
 import {
   DEFAULT_NOTE_CATEGORIES,
   DEFAULT_THEME,
   ENABLE_REDIS,
 } from "../config/constants";
 import { defaultMenuConfig } from "../config/menuConfig";
+import { GEMINI_API_KEY, GEMINI_BASE_URL, SILICONFLOW_API_KEY, SILICONFLOW_BASE_URL, SILICONFLOW_MODEL } from "../config/env";
 
 // 根据配置初始化 Redis
 if (!ENABLE_REDIS) {
@@ -120,6 +121,16 @@ export function parseError(err: any): AppError {
 const SCROLL_POSITION_KEY = "spr_scroll_pos";
 
 export function useAppSync() {
+  // 初始化默认 API 配置（默认使用硅基流动）
+  const defaultApiConfig: ApiConfig = {
+    provider: 'siliconflow',
+    geminiApiKey: GEMINI_API_KEY,
+    geminiBaseUrl: GEMINI_BASE_URL || undefined, // Gemini 代理地址
+    siliconflowApiKey: SILICONFLOW_API_KEY || undefined,
+    siliconflowBaseUrl: SILICONFLOW_BASE_URL,
+    siliconflowModel: SILICONFLOW_MODEL,
+  };
+
   const [state, setState] = useState<SyncData>({
     markdown: "",
     analysis: null,
@@ -130,6 +141,7 @@ export function useAppSync() {
     nodeParagraphs: {},
     nodeDrawings: {},
     menuConfig: defaultMenuConfig,
+    apiConfig: defaultApiConfig,
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -147,17 +159,20 @@ export function useAppSync() {
 
   // 初始化应用（从飞书附件获取 Markdown）
   const init = async () => {
+    console.log("=== 开始初始化 ===");
     setIsLoading(true);
     setError(null);
 
     try {
       // 1. 获取当前记录 ID
+      console.log("步骤 1: 获取记录 ID...");
       const recordId = await getCurrentRecordId();
       console.log("当前记录 ID:", recordId);
       setCurrentRecordId(recordId);
       persistenceManager.setRecordId(recordId);
 
       // 2. 尝试从缓存加载已有数据
+      console.log("步骤 2: 尝试从缓存加载...");
       const cachedData = await persistenceManager.fetch(recordId);
       if (cachedData && cachedData.analysis) {
         console.log("使用缓存数据");
@@ -168,26 +183,36 @@ export function useAppSync() {
           menuConfig: cachedData.menuConfig || defaultMenuConfig,
         });
         setLastSyncSuccess(true);
-      } else {
-        // 3. 从附件获取 Markdown 并解析
-        console.log("从附件获取 Markdown");
-        const markdown = await getMarkdownFromAttachment();
-        const analysis = await analyzeMarkdown(markdown);
-
-        const newState: SyncData = {
-          markdown,
-          analysis,
-          completedSlots: [],
-          notes: {},
-          noteCategories: [...DEFAULT_NOTE_CATEGORIES],
-          theme: DEFAULT_THEME,
-        };
-        setState(newState);
-
-        // 快速保存到缓存
-        persistenceManager.saveFast(recordId, newState);
-        setLastSyncSuccess(true);
+        setIsLoading(false);
+        isInitializing.current = false;
+        return;
       }
+
+      // 3. 从附件���取 Markdown 并解析
+      console.log("步骤 3: 从附件获取 Markdown...");
+      const markdown = await getMarkdownFromAttachment();
+      console.log("Markdown 获取成功，长度:", markdown.length);
+
+      console.log("步骤 4: AI 解析中...");
+      const apiConfig = state.apiConfig || defaultApiConfig;
+      const analysis = await analyzeMarkdownWithProvider(markdown, apiConfig);
+      console.log("AI 解析完成");
+
+      const newState: SyncData = {
+        markdown,
+        analysis,
+        completedSlots: [],
+        notes: {},
+        noteCategories: [...DEFAULT_NOTE_CATEGORIES],
+        theme: DEFAULT_THEME,
+        apiConfig,
+      };
+      setState(newState);
+
+      // 快速保存到缓存
+      persistenceManager.saveFast(recordId, newState);
+      setLastSyncSuccess(true);
+      console.log("=== 初始化完成 ===");
     } catch (err: any) {
       console.error("初始化错误:", err);
       setError(parseError(err));
@@ -203,16 +228,19 @@ export function useAppSync() {
     setError(null);
 
     try {
-      if (!currentRecordId) {
-        throw new Error("无法获取记录 ID");
-      }
+      // 重新获取 recordId，确保是最新的
+      const recordId = await getCurrentRecordId();
+      console.log("重新解析 - 记录 ID:", recordId);
+      setCurrentRecordId(recordId);
+      persistenceManager.setRecordId(recordId);
 
       // 清空缓存
-      persistenceManager.clearAll(currentRecordId);
+      persistenceManager.clearAll(recordId);
 
       // 从附件重新获取 markdown 并解析
       const markdown = await getMarkdownFromAttachment();
-      const analysis = await analyzeMarkdown(markdown);
+      const apiConfig = state.apiConfig || defaultApiConfig;
+      const analysis = await analyzeMarkdownWithProvider(markdown, apiConfig);
 
       // 创建新状态，保留笔记和分类
       const newState: SyncData = {
@@ -227,7 +255,7 @@ export function useAppSync() {
       localStorage.setItem(SCROLL_POSITION_KEY, "0");
 
       // 快速保存
-      persistenceManager.saveFast(currentRecordId, newState);
+      persistenceManager.saveFast(recordId, newState);
       setLastSyncSuccess(true);
     } catch (err: any) {
       setError(parseError(err));
@@ -323,6 +351,7 @@ export function useAppSync() {
     state.nodeParagraphs,
     state.menuConfig,
     state.nodeDrawings,
+    state.apiConfig,
     currentRecordId,
   ]);
 

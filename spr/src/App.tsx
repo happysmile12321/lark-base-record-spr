@@ -17,6 +17,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ContextMenu from './components/menu/ContextMenu';
 import SettingsModal from './components/modals/SettingsModal';
+import ApiSettingsModal from './components/modals/ApiSettingsModal';
 import ConfirmModal from './components/modals/ConfirmModal';
 import TreeItem from './components/tree/TreeItem';
 import MarkdownView from './components/markdown/MarkdownView';
@@ -87,6 +88,7 @@ export const App = () => {
 
     // ========== UI 状态 ==========
     const [showSettings, setShowSettings] = useState(false);
+    const [showApiSettings, setShowApiSettings] = useState(false);
     const [isExpandingParts, setIsExpandingParts] = useState(false);
     const [showMarkdownPanel, setShowMarkdownPanel] = useState(true);
     const [showReparseConfirm, setShowReparseConfirm] = useState(false);
@@ -176,6 +178,9 @@ export const App = () => {
                 break;
             case 'reparse':
                 setShowReparseConfirm(true);
+                break;
+            case 'apiSettings':
+                setShowApiSettings(true);
                 break;
         }
         closeContextMenu();
@@ -294,6 +299,17 @@ export const App = () => {
                     theme={theme}
                     menuConfig={state.menuConfig}
                     onUpdateMenuConfig={(config) => setState(prev => ({ ...prev, menuConfig: config }))}
+                />
+            )}
+
+            {/* API 设置弹窗 */}
+            {showApiSettings && (
+                <ApiSettingsModal
+                    isOpen={showApiSettings}
+                    apiConfig={state.apiConfig}
+                    onSave={(config) => setState(prev => ({ ...prev, apiConfig: config }))}
+                    onClose={() => setShowApiSettings(false)}
+                    theme={theme}
                 />
             )}
 

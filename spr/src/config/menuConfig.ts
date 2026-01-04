@@ -9,6 +9,7 @@ export const ICON_MAP: Record<string, MenuItemAction> = {
   RotateCcw: "refresh",
   BookOpen: "toggleMarkdownPanel",
   RefreshCw: "reparse",
+  Key: "apiSettings",
 };
 
 // 默认菜单配置 - 环绕式单一布局
@@ -59,6 +60,13 @@ export const defaultMenuConfig: MenuConfig = {
           label: "刷新数据",
           icon: "RotateCcw",
           action: "refresh",
+          visible: true,
+        },
+        {
+          id: "apiSettings",
+          label: "API设置",
+          icon: "Key",
+          action: "apiSettings",
           visible: true,
         },
       ],

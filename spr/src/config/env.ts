@@ -15,6 +15,13 @@ if (!GEMINI_API_KEY) {
 }
 
 // ================================
+// 硅基流动 API 配置 (可选，可在应用内配置)
+// ================================
+export const SILICONFLOW_API_KEY = process.env.VITE_SILICONFLOW_API_KEY || '';
+export const SILICONFLOW_BASE_URL = process.env.VITE_SILICONFLOW_BASE_URL || 'https://api.siliconflow.cn';
+export const SILICONFLOW_MODEL = process.env.VITE_SILICONFLOW_MODEL || 'deepseek-ai/DeepSeek-V3';
+
+// ================================
 // Supabase 配置
 // ================================
 export const SUPABASE_URL = process.env.VITE_SUPABASE_URL || '';

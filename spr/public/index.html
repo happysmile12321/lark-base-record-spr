@@ -1,11 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
 
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/css2.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #010101;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+
+    /* 液态背景滤镜 */
+    .liquid-bg {
+      filter: url('#liquid-filter');
+    }
+
+    /* UI 粘滞效果滤镜 */
+    .ui-gooey-layer {
+      filter: url('#ui-gooey-mercury');
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    /* 玻璃态容器 */
+    .glass-panel {
+      backdrop-filter: blur(60px);
+      -webkit-backdrop-filter: blur(60px);
+    }
+
+    /* 自定义滚动条 */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* 浅色主题滚动条 */
+    html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes radial-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* 复习高亮动画：金色光晕脉冲 */
+    @keyframes highlight-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+        border-color: rgba(251, 191, 36, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 20px 5px rgba(251, 191, 36, 0.3);
+        border-color: rgba(251, 191, 36, 1);
+      }
+    }
+
+    .highlight-review {
+      animation: highlight-pulse 1.5s ease-in-out 3;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+  <link rel="stylesheet" href="/index.css">
+
+</head>
+
+<body>
+  <!-- SVG Filters for Liquid Effects -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+    <defs>
+      <!-- Background Liquid Filter -->
+      <filter id="liquid-filter">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -9" result="liquid" />
+      </filter>
+
+      <!-- Mercury UI Filter (High Surface Tension) -->
+      <filter id="ui-gooey-mercury" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 40 -15" result="goo" />
+        <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+      </filter>
+    </defs>
+  </svg>
+  <div id="root"></div>
+</body>
+
 </html>

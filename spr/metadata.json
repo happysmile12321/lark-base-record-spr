@@ -1,0 +1,5 @@
+{
+  "name": "Markdown Logic Analyzer",
+  "description": "An advanced tool that extracts the deep logical skeleton of Markdown documents into a structured JSON hierarchy using Gemini 3 Pro reasoning.",
+  "requestFramePermissions": []
+}

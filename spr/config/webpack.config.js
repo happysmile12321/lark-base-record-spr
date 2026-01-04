@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { ESBuildMinifyPlugin } = require('esbuild-loader');
@@ -52,6 +53,7 @@ const config = {
             use: [
               isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
               'css-loader',
+              'postcss-loader',
             ],
           },
           {
@@ -77,6 +79,19 @@ const config = {
     ...(isDevelopment
       ? [new ReactRefreshWebpackPlugin(), new WebpackBar()]
       : [new MiniCssExtractPlugin()]),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+    new webpack.DefinePlugin({
+      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.VITE_GEMINI_API_KEY || ''),
+      'process.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || ''),
+      'process.env.VITE_SUPABASE_API_KEY': JSON.stringify(process.env.VITE_SUPABASE_API_KEY || ''),
+      'process.env.VITE_SUPABASE_TABLE_NAME': JSON.stringify(process.env.VITE_SUPABASE_TABLE_NAME || 'blocks_sync'),
+      'process.env.VITE_REDIS_REST_URL': JSON.stringify(process.env.VITE_REDIS_REST_URL || ''),
+      'process.env.VITE_REDIS_PASSWORD': JSON.stringify(process.env.VITE_REDIS_PASSWORD || ''),
+      'process.env.VITE_ENABLE_REDIS': JSON.stringify(process.env.VITE_ENABLE_REDIS || 'false'),
+      'process.env.VITE_ATTACHMENT_FIELD_NAME': JSON.stringify(process.env.VITE_ATTACHMENT_FIELD_NAME || '附件'),
+    }),
     new BitableAppWebpackPlugin({
       // open: true, // 控制是否自动打开多维表格
     }),
@@ -88,6 +103,9 @@ const config = {
   ],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    fallback: {
+      process: require.resolve("process/browser"),
+    },
   },
   optimization: {
     minimize: isProduction,
@@ -108,18 +126,18 @@ const config = {
   devServer: isProduction
     ? undefined
     : {
-        hot: true,
-        client: {
-          logging: 'error',
-        },
-        setupMiddlewares: (middlewares, devServer) => {
-          if (!devServer || !devServer.app) {
-            throw new Error('webpack-dev-server is not defined');
-          }
-          middlewares.push(opdevMiddleware(devServer))
-          return middlewares;
-        },
+      hot: true,
+      client: {
+        logging: 'error',
       },
+      setupMiddlewares: (middlewares, devServer) => {
+        if (!devServer || !devServer.app) {
+          throw new Error('webpack-dev-server is not defined');
+        }
+        middlewares.push(opdevMiddleware(devServer))
+        return middlewares;
+      },
+    },
   cache: {
     type: 'filesystem',
     buildDependencies: {
